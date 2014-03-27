@@ -82,7 +82,7 @@ class VK
         $params['lang'] = $this->lang;
         $params['https'] = $this->https;
 
-        if($auth_by_token){
+        if ($auth_by_token) {
 
             if (!$this->access_token) {
                 $this->access_token = $this->getServerAccessToken();
@@ -92,8 +92,7 @@ class VK
             $params['access_token'] = $this->access_token;
 
             $response = file_get_contents('https://api.vk.com/method/' . $method . '?' . http_build_query($params));
-        }
-        else{
+        } else {
 
             $params['api_id'] = $this->app_id;
             $params['method'] = $method;
@@ -111,9 +110,15 @@ class VK
             throw new VKException('VK API error');
         }
 
-        if(!empty($response->error->error_code) && !empty($response->error->error_msg)){
+        if (!empty($response->error->error_code) && !empty($response->error->error_msg)) {
             throw new VKException($response->error->error_msg, $response->error->error_code);
         }
+
+        if (!isset($response->response)) {
+            throw new VKException('VK API error');
+        }
+
+        $response = $response->response;
 
         return $response;
     }
@@ -128,7 +133,7 @@ class VK
         $params = array(
             'client_id' => $this->app_id,
             'client_secret' => $this->secret,
-            'v' => $this->verion,
+            'v' => $this->version,
             'grant_type' => 'client_credentials',
         );
 
