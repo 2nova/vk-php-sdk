@@ -2,7 +2,6 @@
 
 namespace Novanova\VK;
 
-
 /**
  * Class VK
  * @package Novanova\VK
@@ -10,13 +9,38 @@ namespace Novanova\VK;
 class VK
 {
 
+    /**
+     * @var string
+     */
     private $app_id;
+    /**
+     * @var string
+     */
     private $secret;
+    /**
+     * @var string
+     */
     private $version;
+    /**
+     * @var string
+     */
     private $lang;
+    /**
+     * @var int
+     */
     private $https;
+    /**
+     * @var string|null
+     */
     private $access_token = null;
 
+    /**
+     * @param string $app_id
+     * @param string $secret
+     * @param string $version
+     * @param string $lang
+     * @param int $https
+     */
     public function __construct($app_id, $secret, $version = '5.16', $lang = 'ru', $https = 1)
     {
         $this->app_id = $app_id;
@@ -26,21 +50,37 @@ class VK
         $this->https = $https;
     }
 
+    /**
+     * @return string
+     */
     public function app_id()
     {
         return $this->app_id;
     }
 
+    /**
+     * @param $viewer_id
+     * @return string
+     */
     public function calculateAuthKey($viewer_id)
     {
         return md5($this->app_id . '_' . $viewer_id . '_' . $this->secret);
     }
 
+    /**
+     * @param $method
+     * @param $params
+     * @param bool $auth_by_token
+     * @return mixed
+     * @throws VKException
+     */
     public function api($method, $params, $auth_by_token = false)
     {
         $response = null;
 
         $params['v'] = $this->version;
+        $params['lang'] = $this->lang;
+        $params['https'] = $this->https;
 
         if($auth_by_token){
 
@@ -71,9 +111,17 @@ class VK
             throw new VKException('VK API error');
         }
 
+        if(!empty($response->error->error_code) && !empty($response->error->error_msg)){
+            throw new VKException($response->error->error_msg, $response->error->error_code);
+        }
+
         return $response;
     }
 
+    /**
+     * @return mixed
+     * @throws VKException
+     */
     public function getServerAccessToken()
     {
 
@@ -96,6 +144,10 @@ class VK
         return $response->access_token;
     }
 
+    /**
+     * @param $params
+     * @return string
+     */
     private function sign($params)
     {
         $sign = '';
