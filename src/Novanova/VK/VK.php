@@ -68,13 +68,13 @@ class VK
     }
 
     /**
-     * @param $method
-     * @param $params
+     * @param string $method
+     * @param array $params
      * @param bool $auth_by_token
      * @return mixed
      * @throws VKException
      */
-    public function api($method, $params, $auth_by_token = false)
+    public function api($method, array $params, $auth_by_token = false)
     {
         $response = null;
 
