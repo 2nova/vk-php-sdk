@@ -186,7 +186,7 @@ class VK
         }
 
         return array(
-            'id' => (int)$session['mid'],
+            'id' => $session['mid'],
             'secret' => $session['secret'],
             'sid' => $session['sid']
         );
