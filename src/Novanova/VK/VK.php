@@ -150,6 +150,49 @@ class VK
     }
 
     /**
+     * @return array
+     * @throws VKException
+     */
+    public function parseCookie()
+    {
+        if (empty($_COOKIE['vk_app_' . $this->app_id])) {
+            throw new VKException('No cookie');
+        }
+        $cookie = $_COOKIE['vk_app_' . $this->app_id];
+        $pairs = explode('&', $cookie, 10);
+        if (!is_array($pairs)) {
+            throw new VKException('Bad cookie');
+        }
+        $session = array();
+        $valid_keys = array('expire', 'mid', 'secret', 'sid', 'sig');
+        foreach ($pairs as $pair) {
+            list($key, $value) = explode('=', $pair, 2);
+            if (empty($key) || empty($value) || !in_array($key, $valid_keys)) {
+                continue;
+            }
+            $session[$key] = $value;
+        }
+        foreach ($valid_keys as $key) {
+            if (!isset($session[$key])) {
+                throw new VKException('No ' . $key . ' parameter');
+            }
+        }
+
+        if ($session['sig'] !== $this->sign($session)) {
+            throw new VKException('Bad sign');
+        }
+        if ($session['expire'] <= time()) {
+            throw new VKException('Session expired');
+        }
+
+        return array(
+            'id' => (int)$session['mid'],
+            'secret' => $session['secret'],
+            'sid' => $session['sid']
+        );
+    }
+
+    /**
      * @param $params
      * @return string
      */
