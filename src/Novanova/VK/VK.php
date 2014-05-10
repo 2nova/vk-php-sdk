@@ -178,7 +178,10 @@ class VK
             }
         }
 
-        if ($session['sig'] !== $this->sign($session)) {
+        $secret = $session['sig'];
+        unset($session['sig']);
+
+        if ($secret !== $this->sign($session)) {
             throw new VKException('Bad sign');
         }
         if ($session['expire'] <= time()) {
