@@ -68,13 +68,24 @@ class VK
     }
 
     /**
+     * @param $method
+     * @param array $params
+     * @return mixed
+     */
+    public function no_auth_api($method, array $params)
+    {
+        return $this->api($method, $params, true, false);
+    }
+
+    /**
      * @param string $method
      * @param array $params
      * @param bool $auth_by_token
+     * @param bool $auth
      * @return mixed
      * @throws VKException
      */
-    public function api($method, array $params, $auth_by_token = false)
+    public function api($method, array $params, $auth_by_token = false, $auth = true)
     {
         $response = null;
 
@@ -82,26 +93,30 @@ class VK
         $params['lang'] = $this->lang;
         $params['https'] = $this->https;
 
-        if ($auth_by_token) {
-
-            if (!$this->access_token) {
-                $this->access_token = $this->getServerAccessToken();
-            }
-
-            $params['client_secret'] = $this->secret;
-            $params['access_token'] = $this->access_token;
-
+        if (!$auth) {
             $response = file_get_contents('https://api.vk.com/method/' . $method . '?' . http_build_query($params));
         } else {
+            if ($auth_by_token) {
 
-            $params['api_id'] = $this->app_id;
-            $params['method'] = $method;
-            $params['format'] = 'json';
-            $params['random'] = rand(1, 9999);
-            $params['timestamp'] = time();
-            $params['sig'] = $this->sign($params);
+                if (!$this->access_token) {
+                    $this->access_token = $this->getServerAccessToken();
+                }
 
-            $response = file_get_contents('https://api.vk.com/api.php?' . http_build_query($params));
+                $params['client_secret'] = $this->secret;
+                $params['access_token'] = $this->access_token;
+
+                $response = file_get_contents('https://api.vk.com/method/' . $method . '?' . http_build_query($params));
+            } else {
+
+                $params['api_id'] = $this->app_id;
+                $params['method'] = $method;
+                $params['format'] = 'json';
+                $params['random'] = rand(1, 9999);
+                $params['timestamp'] = time();
+                $params['sig'] = $this->sign($params);
+
+                $response = file_get_contents('https://api.vk.com/api.php?' . http_build_query($params));
+            }
         }
 
 
