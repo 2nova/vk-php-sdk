@@ -35,19 +35,38 @@ class VK
     private $access_token = null;
 
     /**
+     * @var array
+     *      array['send_secret'] bool
+     */
+    private $options = [
+        'send_secret' => true,
+    ];
+
+    /**
      * @param string $app_id
      * @param string $secret
      * @param string $version
      * @param string $lang
-     * @param int $https
+     * @param int    $https
      */
-    public function __construct($app_id, $secret, $version = '5.16', $lang = 'ru', $https = 1)
+    public function __construct($app_id, $secret, $version = '5.24', $lang = 'ru', $https = 1)
     {
         $this->app_id = $app_id;
         $this->secret = $secret;
         $this->version = $version;
         $this->lang = $lang;
         $this->https = $https;
+    }
+
+    /**
+     * @param  array $options
+     * @return $this
+     */
+    public function setOptions(array $options)
+    {
+        $this->options = array_merge($this->options, $options);
+
+        return $this;
     }
 
     /**
@@ -69,7 +88,7 @@ class VK
 
     /**
      * @param $method
-     * @param array $params
+     * @param  array $params
      * @return mixed
      */
     public function no_auth_api($method, array $params)
@@ -78,10 +97,10 @@ class VK
     }
 
     /**
-     * @param string $method
-     * @param array $params
-     * @param bool $auth_by_token
-     * @param bool $auth
+     * @param  string      $method
+     * @param  array       $params
+     * @param  bool        $auth_by_token
+     * @param  bool        $auth
      * @return mixed
      * @throws VKException
      */
@@ -102,7 +121,9 @@ class VK
                     $this->access_token = $this->getServerAccessToken();
                 }
 
-                $params['client_secret'] = $this->secret;
+                if ($this->options['send_secret']) {
+                    $params['client_secret'] = $this->secret;
+                }
                 $params['access_token'] = $this->access_token;
 
                 $response = file_get_contents('https://api.vk.com/method/' . $method . '?' . http_build_query($params));
@@ -118,7 +139,6 @@ class VK
                 $response = file_get_contents('https://api.vk.com/api.php?' . http_build_query($params));
             }
         }
-
 
         $response = json_decode($response);
         if (!$response || JSON_ERROR_NONE !== json_last_error()) {
@@ -136,6 +156,14 @@ class VK
         $response = $response->response;
 
         return $response;
+    }
+
+    /**
+     * @param $access_token
+     */
+    public function setAccessToken($access_token)
+    {
+        $this->access_token = $access_token;
     }
 
     /**
@@ -161,6 +189,7 @@ class VK
         if (empty($response->access_token)) {
             throw new VKException('VK API error');
         }
+
         return $response->access_token;
     }
 
@@ -222,7 +251,7 @@ class VK
             $sign .= $key . '=' . $value;
         }
         $sign .= $this->secret;
+
         return md5($sign);
     }
-
 }
