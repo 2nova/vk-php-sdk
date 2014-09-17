@@ -47,7 +47,7 @@ class VK
      * @param string $secret
      * @param string $version
      * @param string $lang
-     * @param int    $https
+     * @param int $https
      */
     public function __construct($app_id, $secret, $version = '5.24', $lang = 'ru', $https = 1)
     {
@@ -97,10 +97,10 @@ class VK
     }
 
     /**
-     * @param  string      $method
-     * @param  array       $params
-     * @param  bool        $auth_by_token
-     * @param  bool        $auth
+     * @param  string $method
+     * @param  array $params
+     * @param  bool $auth_by_token
+     * @param  bool $auth
      * @return mixed
      * @throws VKException
      */
@@ -160,10 +160,42 @@ class VK
 
     /**
      * @param $access_token
+     * @return $this
      */
     public function setAccessToken($access_token)
     {
         $this->access_token = $access_token;
+        return $this;
+    }
+
+
+    /**
+     * @param string $code
+     * @param string $redirect_uri
+     * @return mixed
+     * @throws VKException
+     */
+    public function getAccessToken($code, $redirect_uri)
+    {
+
+        $params = array(
+            'client_id' => $this->app_id,
+            'client_secret' => $this->secret,
+            'code' => $code,
+            'redirect_uri' => $redirect_uri,
+        );
+
+        $response = file_get_contents('https://oauth.vk.com/access_token?' . http_build_query($params));
+
+        if (!$response = json_decode($response)) {
+            throw new VKException('VK API error');
+        }
+
+        if (empty($response->access_token)) {
+            throw new VKException('VK API error');
+        }
+
+        return $response;
     }
 
     /**
