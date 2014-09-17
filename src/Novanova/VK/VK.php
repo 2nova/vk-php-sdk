@@ -12,33 +12,33 @@ class VK
     /**
      * @var string
      */
-    private $app_id;
+    protected $app_id;
     /**
      * @var string
      */
-    private $secret;
+    protected $secret;
     /**
      * @var string
      */
-    private $version;
+    protected $version;
     /**
      * @var string
      */
-    private $lang;
+    protected $lang;
     /**
      * @var int
      */
-    private $https;
+    protected $https;
     /**
      * @var string|null
      */
-    private $access_token = null;
+    protected $access_token = null;
 
     /**
      * @var array
      *      array['send_secret'] bool
      */
-    private $options = [
+    protected $options = [
         'send_secret' => true,
     ];
 
@@ -275,7 +275,7 @@ class VK
      * @param $params
      * @return string
      */
-    private function sign($params)
+    protected function sign($params)
     {
         $sign = '';
         ksort($params);
