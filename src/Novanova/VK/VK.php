@@ -78,6 +78,14 @@ class VK
     }
 
     /**
+     * @return string
+     */
+    public function getVersion()
+    {
+        return $this->version;
+    }
+
+    /**
      * @param $viewer_id
      * @return string
      */
