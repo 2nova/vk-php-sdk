@@ -2,6 +2,9 @@
 
 namespace Novanova\VK;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+
 /**
  * Class VK
  * @package Novanova\VK
@@ -43,6 +46,11 @@ class VK
     ];
 
     /**
+     * @var Client
+     */
+    private $guzzle;
+
+    /**
      * @param string $app_id
      * @param string $secret
      * @param string $version
@@ -56,6 +64,8 @@ class VK
         $this->version = $version;
         $this->lang = $lang;
         $this->https = $https;
+
+        $this->guzzle = new Client();
     }
 
     /**
@@ -121,7 +131,7 @@ class VK
         $params['https'] = $this->https;
 
         if (!$auth) {
-            $response = file_get_contents('https://api.vk.com/method/' . $method . '?' . http_build_query($params));
+            $response = $this->call('https://api.vk.com/method/' . $method, $params);
         } else {
             if ($auth_by_token) {
 
@@ -134,7 +144,7 @@ class VK
                 }
                 $params['access_token'] = $this->access_token;
 
-                $response = file_get_contents('https://api.vk.com/method/' . $method . '?' . http_build_query($params));
+                $response = $this->call('https://api.vk.com/method/' . $method, $params);
             } else {
 
                 $params['api_id'] = $this->app_id;
@@ -144,17 +154,8 @@ class VK
                 $params['timestamp'] = time();
                 $params['sig'] = $this->sign($params);
 
-                $response = file_get_contents('https://api.vk.com/api.php?' . http_build_query($params));
+                $response = $this->call('https://api.vk.com/api.php', $params);
             }
-        }
-
-        $response = json_decode($response);
-        if (!$response || JSON_ERROR_NONE !== json_last_error()) {
-            throw new VKException('VK API error');
-        }
-
-        if (!empty($response->error->error_code) && !empty($response->error->error_msg)) {
-            throw new VKException($response->error->error_msg, $response->error->error_code);
         }
 
         if (!isset($response->response)) {
@@ -173,13 +174,13 @@ class VK
     public function setAccessToken($access_token)
     {
         $this->access_token = $access_token;
+
         return $this;
     }
 
-
     /**
-     * @param string $code
-     * @param string $redirect_uri
+     * @param  string $code
+     * @param  string $redirect_uri
      * @return mixed
      * @throws VKException
      */
@@ -193,11 +194,7 @@ class VK
             'redirect_uri' => $redirect_uri,
         );
 
-        $response = file_get_contents('https://oauth.vk.com/access_token?' . http_build_query($params));
-
-        if (!$response = json_decode($response)) {
-            throw new VKException('VK API error');
-        }
+        $response = $this->call('https://oauth.vk.com/access_token', $params);
 
         if (empty($response->access_token)) {
             throw new VKException('VK API error');
@@ -220,11 +217,7 @@ class VK
             'grant_type' => 'client_credentials',
         );
 
-        $response = file_get_contents('https://oauth.vk.com/access_token?' . http_build_query($params));
-
-        if (!$response = json_decode($response)) {
-            throw new VKException('VK API error');
-        }
+        $response = $this->call('https://oauth.vk.com/access_token', $params);
 
         if (empty($response->access_token)) {
             throw new VKException('VK API error');
@@ -293,5 +286,35 @@ class VK
         $sign .= $this->secret;
 
         return md5($sign);
+    }
+
+    /**
+     * @param $params
+     * @return mixed
+     * @throws VKException
+     */
+    private function call($url, array $params)
+    {
+        try {
+            $response = $this->guzzle->post(
+                $url,
+                array(
+                    'body' => $params
+                )
+            )->getBody();
+        } catch (RequestException $e) {
+            throw new VKException($e->getMessage());
+        }
+
+        $response = json_decode($response);
+        if (!$response || JSON_ERROR_NONE !== json_last_error()) {
+            throw new VKException('Response parse error');
+        }
+
+        if (!empty($response->error->error_code) && !empty($response->error->error_msg)) {
+            throw new VKException($response->error->error_msg, $response->error->error_code);
+        }
+
+        return $response;
     }
 }
