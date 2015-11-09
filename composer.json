@@ -3,7 +3,7 @@
     "description": "VK PHP SDK",
     "license": "MIT",
     "keywords": ["vk", "vkontakte", "sdk"],
-    "version": "0.10.0",
+    "version": "0.10.1",
     "authors": [
         {
             "name": "Ivan Nikitin",
@@ -11,8 +11,7 @@
         }
     ],
     "require": {
-        "php": ">=5.3.0",
-        "guzzlehttp/guzzle": "6.*"
+        "guzzlehttp/guzzle": "~6"
     },
     "autoload": {
         "psr-0": {
