@@ -57,7 +57,7 @@ class VK
      * @param string $lang
      * @param int $https
      */
-    public function __construct($app_id, $secret, $version = '5.24', $lang = 'ru', $https = 1)
+    public function __construct($app_id, $secret, $version = '5.30', $lang = 'ru', $https = 1)
     {
         $this->app_id = $app_id;
         $this->secret = $secret;
