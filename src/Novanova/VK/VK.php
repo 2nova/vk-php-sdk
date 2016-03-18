@@ -299,7 +299,7 @@ class VK
             $response = $this->guzzle->post(
                 $url,
                 array(
-                    'body' => $params
+                    'form_params' => $params
                 )
             )->getBody();
         } catch (RequestException $e) {
