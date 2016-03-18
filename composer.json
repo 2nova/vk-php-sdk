@@ -3,7 +3,6 @@
     "description": "VK PHP SDK",
     "license": "MIT",
     "keywords": ["vk", "vkontakte", "sdk"],
-    "version": "0.10.1",
     "authors": [
         {
             "name": "Ivan Nikitin",
